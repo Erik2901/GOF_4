@@ -11,8 +11,8 @@ using namespace std;
 int main(void)
 {
     MyTools::OpenLogFile("log.txt");
-
-    SBomber game;
+    WinColDet* win = new WinColDet;
+    SBomber game(win);
 
     do {
         game.TimeStart();

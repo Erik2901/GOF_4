@@ -1,7 +1,7 @@
-
+#include <iostream>
 #include <conio.h>
 #include <windows.h>
-
+#include "CollisionDetector.h"
 #include "MyTools.h"
 #include "SBomber.h"
 #include "Bomb.h"
@@ -9,10 +9,11 @@
 #include "Tank.h"
 #include "House.h"
 
+
 using namespace std;
 using namespace MyTools;
 
-SBomber::SBomber()
+SBomber::SBomber(std::unique_ptr<CollisionDetector> impl)
     : exitFlag(false),
     startTime(0),
     finishTime(0),
@@ -20,7 +21,8 @@ SBomber::SBomber()
     passedTime(0),
     fps(0),
     bombsNumber(10),
-    score(0)
+    score(0),
+    impl_({ std::move(impl) })
 {
     WriteToLog(string(__FUNCTION__) + " was invoked");
 
@@ -58,8 +60,22 @@ SBomber::SBomber()
     pTank->SetPos(50, groundY - 1);
     vecStaticObj.push_back(pTank);
 
-    House * pHouse = new House;
-    pHouse->SetWidth(13);
+    HouseDirector* HouseDir = new HouseDirector;
+    std::cout << "Home type(1 or 2): ";
+    int t;
+    cin >> t;
+    House* pHouse;
+    if (t == 1)
+    {
+        HouseBuilderA* HouseA = new HouseBuilderA;
+        pHouse = HouseDir->createHouse(*HouseA);
+    }
+    else {
+        HouseBuilderB* HouseB = new HouseBuilderB;
+        pHouse = HouseDir->createHouse(*HouseB);
+    }
+    //House * pHouse = new House;
+    pHouse->SetWidth(14);
     pHouse->SetPos(80, groundY - 1);
     vecStaticObj.push_back(pHouse);
 
@@ -115,14 +131,23 @@ void SBomber::CheckObjects()
 
 void SBomber::CheckPlaneAndLevelGUI()
 {
+    if (impl_) {
+        impl_->CheckPlaneAndLevelGUI1();
+    }
+    /*
     if (FindPlane()->GetX() > FindLevelGUI()->GetFinishX())
     {
         exitFlag = true;
     }
+    */
 }
 
 void SBomber::CheckBombsAndGround() 
 {
+    if (impl_) {
+        impl_->CheckBombsAndGround1();
+    }
+    /*
     vector<Bomb*> vecBombs = FindAllBombs();
     Ground* pGround = FindGround();
     const double y = pGround->GetY();
@@ -135,11 +160,15 @@ void SBomber::CheckBombsAndGround()
             DeleteDynamicObj(vecBombs[i]);
         }
     }
-
+    */
 }
 
 void SBomber::CheckDestoyableObjects(Bomb * pBomb)
 {
+    if (impl_) {
+        impl_->CheckDestoyableObjects1(pBomb);
+    }
+    /*
     vector<DestroyableGroundObject*> vecDestoyableObjects = FindDestoyableGroundObjects();
     const double size = pBomb->GetWidth();
     const double size_2 = size / 2;
@@ -153,8 +182,10 @@ void SBomber::CheckDestoyableObjects(Bomb * pBomb)
             DeleteStaticObj(vecDestoyableObjects[i]);
         }
     }
+    */
 }
 
+/*
 void SBomber::DeleteDynamicObj(DynamicObject* pObj)
 {
     auto it = vecDynamicObj.begin();
@@ -237,7 +268,7 @@ vector<Bomb*> SBomber::FindAllBombs() const
 
     return vecBombs;
 }
-
+*/
 Plane* SBomber::FindPlane() const
 {
     for (size_t i = 0; i < vecDynamicObj.size(); i++)
@@ -365,4 +396,20 @@ void SBomber::DropBomb()
         bombsNumber--;
         score -= Bomb::BombCost;
     }
+}
+
+std::vector<DynamicObject*>& SBomber::GetdynObj() {
+    return vecDynamicObj;
+}
+
+std::vector<GameObject*>& SBomber::GetstatObj() {
+    return vecStaticObj;
+}
+
+void SBomber::setflag() {
+     exitFlag = true;
+}
+
+int16_t* SBomber::getscore(){
+    return &score;
 }

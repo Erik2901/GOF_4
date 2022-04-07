@@ -1,7 +1,8 @@
 #pragma once
 
+#include <memory>
 #include <vector>
-
+#include "CollisionDetector.h"
 #include "LevelGUI.h"
 #include "Plane.h"
 #include "Bomb.h"
@@ -10,9 +11,11 @@
 
 class SBomber
 {
+protected:
+    std::unique_ptr<CollisionDetector> impl_;
 public:
 
-    SBomber();
+    SBomber(std::unique_ptr<CollisionDetector> impl);
     ~SBomber();
     
     inline bool GetExitFlag() const { return exitFlag; }
@@ -20,25 +23,26 @@ public:
     void ProcessKBHit();
     void TimeStart();
     void TimeFinish();
-
+    std::vector<DynamicObject*>& GetdynObj();
+    std::vector<GameObject*>& GetstatObj();
+    void setflag();
     void DrawFrame();
     void MoveObjects();
     void CheckObjects();
-
+    int16_t* getscore();
 private:
-
     void CheckPlaneAndLevelGUI();
     void CheckBombsAndGround();
     void __fastcall CheckDestoyableObjects(Bomb* pBomb);
 
-    void __fastcall DeleteDynamicObj(DynamicObject * pBomb);
-    void __fastcall DeleteStaticObj(GameObject* pObj);
+    //void __fastcall DeleteDynamicObj(DynamicObject * pBomb);
+    //void __fastcall DeleteStaticObj(GameObject* pObj);
 
-    Ground * FindGround() const;
+    //Ground * FindGround() const;
     Plane * FindPlane() const;
     LevelGUI * FindLevelGUI() const;
-    std::vector<DestroyableGroundObject*> FindDestoyableGroundObjects() const;
-    std::vector<Bomb*> FindAllBombs() const;
+    //std::vector<DestroyableGroundObject*> FindDestoyableGroundObjects() const;
+    //std::vector<Bomb*> FindAllBombs() const;
 
     void DropBomb();
 
